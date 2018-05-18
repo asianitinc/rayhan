@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en" >
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<head>
+	<title>Array Push</title>
+	<script src="js/jquery-3.3.1.min.js"></script>
+	<style type="text/css">
+	body{
+		font-family:tahoma;
+		font-size:18px;
+	}
+	input[type=text]{
+		font-family:tahoma;
+		font-size:18px;
+		outline:none;
+		padding:5px;
+		color:green;
+	}
+	input[type=submit]{
+		font-family:tahoma;
+		font-size:18px;
+		width:100%;
+		padding:5px;
+		text-align:center;
+	}
+	input[type=button]{
+		font-family:tahoma;
+		font-size:18px;
+		width:48%;
+		padding:5px;
+		text-align:center;
+	}
+	table{
+		border-collapse: collapse;
+	}	
+	</style>
+</head>
+
+<body>
+	<form id="pur_item_add_form" method="post">
+		<table>
+			<tr>
+				<td>ONE</td>
+				<td><input type="text" name="one"></td>
+			</tr>
+			<tr>
+				<td>TWO</td>
+				<td><input type="text" name="two"></td>
+			</tr>
+			<tr>
+				<td>THREE</td>
+				<td><input type="text" name="three"></td>
+			</tr>
+			<tr>
+				<td>FOUR</td>
+				<td><input type="text" name="four"></td>
+			</tr>
+			<tr>
+				<td>FIVE</td>
+				<td><input type="text" name="five"></td>
+			</tr>
+			<tr>
+				<td></td>
+				<td>
+					<input type="button" style="display:none;" name="pur_item_update" value="UPDATE" >
+					<input type="button" style="display:none;" name="pur_item_cancel" value="CANCEL" >
+					<input type="submit" name="pur_item_add" value="ADD ITEM" >
+					<input type="hidden" name="pur_tr_index" value="">
+					<input type="hidden" name="pur_item_id" value="">				
+				</td>
+			</tr>
+		</table>
+	</form>	
+
+	<br />
+	
+	<table id="pur_item_table" border="1" width="100%">
+		<thead>
+			<tr>
+				<td>ONE</td>
+				<td>TWO</td>
+				<td>THREE</td>
+				<td>FOUR</td>
+				<td>FIVE</td>
+				<td>ACTION</td>
+			</tr>
+		</thead>
+		<tbody>           
+			<tr>
+				<td><strong></strong></td>
+				<td><strong></strong></td>
+				<td><strong></strong></td>
+				<td>Total</td>
+				<td><strong><span id="pur_total_price">0.00</span></strong></td>
+				<td><strong></strong></td>
+			</tr>
+		</tbody>
+	</table>
+	
+	<script>
+		$(function(){
+			$("#pur_item_add_form").submit(function(e){
+				e.preventDefault();
+
+				var one = $('[name="one"]').val();
+				var two = $('[name="two"]').val();
+				var three = $('[name="three"]').val();
+				var four = $('[name="four"]').val();
+				var five = $('[name="five"]').val();
+				
+				var total_row = $('#pur_item_table tr').length; // Counting table total row
+				
+				//Preventing duplicate value [Start]
+				for(var i = 1; i< total_row-1; i++){
+					var table_item =  parseInt($('#pur_item_table tr:eq('+i+') td:eq(0)').html()); //First row er first column-ke dora hoyese.
+					
+					if(table_item == one){
+						alert('Item already exists.');
+						return false;
+					}
+				}
+				//Preventing duplicate value [Stop]
+				
+				var last_row = total_row - 2;
+				
+				var sl = last_row + 1;
+				var recent_row = total_row - 1;
+				
+				$('<tr>'+
+				  '<td>'+one+'</td>'+
+				  '<td>'+two+'</td>'+
+				  '<td>'+three+'</td>'+
+				  '<td>'+four+'</td>'+
+				  '<td>'+five+'</td>'+
+				  '<td><a style="line-height:15px!important;" onclick="pur_table_edit($(this).parent().parent().index());" class="btn btn-primary">Edit</a>&nbsp;&nbsp;<a style="line-height:15px!important;background:#f00;" onclick="pur_table_remove($(this).parent().parent().index());" class="btn btn-primary">Remove</a></td>'+
+				 
+				  '</tr>'
+				  ).insertAfter($('#pur_item_table tr:eq('+last_row+')'));
+				
+				var initPrice = 0.00;
+				for(var i = 1; i< total_row - 1; i++){
+					var every_row_price = $('#pur_item_table tr:eq('+i+') td:eq(4)').text().trim();
+					initPrice += parseFloat(every_row_price);    
+				}
+				
+				var total_price = parseFloat(initPrice) + parseFloat(five);
+				
+				$('#pur_total_price').text(total_price);
+				
+				pur_form_clear();
+
+				//purchase.pur_inv_control_dis();		
+			
+			});
+
+
+			
+			/*pur item update*/
+			$('[name="pur_item_update"]').click(function(){
+				
+				var ind = $('[name="pur_tr_index"]').val();
+				
+				alert(ind);
+				return false;
+				
+				if(ind == ""){
+					alert('Select Item for update');
+					return;
+				}
+				
+				$('#pur_item_table tr:eq('+ind+')').remove();
+				
+				var one = $('[name="one"]').val();
+				var two = $('[name="two"]').val();
+				var three = $('[name="three"]').val();
+				var four = $('[name="four"]').val();
+				var five = $('[name="five"]').val();
+
+				<!-- alert(two); -->
+				<!-- return false; -->
+				
+				//alert(item_name);
+				pur_item_add(one, two, three, four, five);
+				
+				$('[name="pur_item_update"]').css('display', 'none');
+				$('[name="pur_item_cancel"]').css('display', 'none');
+				$('[name="pur_item_add"]').css('display', '');
+				
+				pur_form_clear();
+				
+				var total_row = $('#pur_item_table tr').length;
+
+				for(var i = 1; i< total_row-1; i++){
+					$('#pur_item_table tr:eq('+i+') td:eq(1)').text(i);
+				}
+				
+			});
+
+			
+			
+			/*update end*/      
+			$('[name="pur_item_cancel"]').click(function(){
+				$('[name="pur_item_update"]').css('display', 'none');
+				$('[name="pur_item_cancel"]').css('display', 'none');
+				$('[name="pur_item_add"]').css('display', '');
+				pur_form_clear();
+			}); 		
+			
+		})
+		
+		
+		function pur_table_remove(ind){
+			var rev_r =   $('#pur_item_table tr:eq('+ind+') td:eq(5)').html().trim();
+			var rev_total_price = $('#pur_total_price').text();
+			var sub_total_price = rev_total_price - rev_r;
+			$('#pur_total_price').text(sub_total_price);
+			$('[name="pur_total_price"]').val(sub_total_price);
+			$('#pur_item_table tr:eq('+ind+')').remove();		
+		}
+		
+		
+		function pur_table_edit(ind){
+			var one = $('#pur_item_table tr:eq('+ind+') td:eq(0)').html().trim();
+			var two = $('#pur_item_table tr:eq('+ind+') td:eq(1)').html().trim();
+			var three = $('#pur_item_table tr:eq('+ind+') td:eq(2)').html().trim();
+			var four = $('#pur_item_table tr:eq('+ind+') td:eq(3)').html().trim();
+			var five = $('#pur_item_table tr:eq('+ind+') td:eq(4)').html().trim();		
+			
+			$('[name="pur_tr_index"]').val(ind);
+			
+			$('[name="one"]').val(one);
+			$('[name="two"]').val(two);
+			$('[name="three"]').val(three);
+			$('[name="four"]').val(four);
+			$('[name="five"]').val(five);
+			   
+			//item_select(item_id);
+
+			$('[name="pur_item_update"]').css('display', '');
+			$('[name="pur_item_cancel"]').css('display', '');
+			$('[name="pur_item_add"]').css('display', 'none');		
+		}	
+
+
+		
+		function pur_form_clear(){
+			$('[name="one"]').val('');
+			$('[name="two"]').val('');
+			$('[name="three"]').val('');
+			$('[name="four"]').val('');
+			$('[name="five"]').val('');	
+		}
+
+
+		
+		function pur_item_add(one, two, three, four, five){
+
+			<!-- alert(two); -->
+			<!-- return false; -->
+	
+			var total_row = $('#pur_item_table tr').length; // Counting table total row
+			
+			//Preventing duplicate value [Start]
+			for(var i = 1; i< total_row-1; i++){
+				var table_item =  parseInt($('#pur_item_table tr:eq('+i+') td:eq(0)').html()); //First row er first column-ke dora hoyese.
+				
+				if(table_item == one){
+					alert('Item already exists.');
+					return false;
+				}
+			}
+			//Preventing duplicate value [Stop]
+			
+			var last_row = total_row - 2;
+			
+			var sl = last_row + 1;
+			var recent_row = total_row - 1;
+			
+			$('<tr>'+
+			  '<td>'+one+'</td>'+
+			  '<td>'+two+'</td>'+
+			  '<td>'+three+'</td>'+
+			  '<td>'+four+'</td>'+
+			  '<td>'+five+'</td>'+
+			  '<td><a style="line-height:15px!important;" onclick="pur_table_edit($(this).parent().parent().index());" class="btn btn-primary">Edit</a>&nbsp;&nbsp;<a style="line-height:15px!important;background:#f00;" onclick="pur_table_remove($(this).parent().parent().index());" class="btn btn-primary">Remove</a></td>'+
+			 '</tr>'
+			  ).insertAfter($('#pur_item_table tr:eq('+last_row+')'));
+			
+			var initPrice = 0.00;
+			for(var i = 1; i< total_row - 1; i++){
+				var every_row_price = $('#pur_item_table tr:eq('+i+') td:eq(4)').text().trim();
+				initPrice += parseFloat(every_row_price);    
+			}
+			
+			var total_price = parseFloat(initPrice) + parseFloat(five);
+			
+			$('#pur_total_price').text(total_price);
+			
+			pur_form_clear();
+		}
+	</script>
+</body>
+</html>
